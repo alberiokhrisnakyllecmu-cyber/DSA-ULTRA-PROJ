@@ -11,3 +11,4 @@ class TerrainGenerator:
     def generate_terrain(self, specification: TerrainGenerationSpec, seed: int) -> Terrain:
         # This workbench accepts only its documented public introductory family.
         raise NotImplementedError("TODO TerrainGenerator.generate_terrain")
+        #lalllalalalalala
