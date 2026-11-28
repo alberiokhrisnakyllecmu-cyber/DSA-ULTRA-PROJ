@@ -1,6 +1,8 @@
 """TODO: generate canonical terrain deterministically from specification and seed."""
 from src.api import GenerationFailure, Terrain, TerrainGenerationSpec, TerrainTopology
+
 _STEPS = ((-1, 0), (1, 0), (0, -1), (0, 1))
+
 _PUBLISHED_LAYOUTS = {
     (TerrainTopology.BENT_PATH, 3, 4, 6): ("....", "###.", "###."),
     (TerrainTopology.BRANCHING_TREE, 4, 5, 8): ("##.##", ".....", "##.##", "##.##"),
@@ -10,29 +12,32 @@ _PUBLISHED_LAYOUTS = {
     (TerrainTopology.GENERAL, 3, 6, 14): ("......", ".####.", "......"),
 }
 
+
 class TerrainGenerator:
-    """Keep state local; identical inputs must also agree across fresh instances."""
+    """Keep state local; the same inputs always produce the same terrain."""
 
     def __init__(self) -> None:
         pass
 
     def generate_terrain(self, specification: TerrainGenerationSpec, seed: int) -> Terrain:
-        target =self._get_target(specification)
+        target = self._target_size(specification)
         topology = specification.topology
         layout = _PUBLISHED_LAYOUTS.get((topology, specification.rows, specification.columns, target))
-        if layout is None:
+        if layout is not None:
             return Terrain(layout)
-        if topology == TerrainTopology.STRAIGHT_PATH:
+        if topology is TerrainTopology.STRAIGHT_PATH:
             cells = self._straight_cells(specification.rows, specification.columns, target)
-        elif topology == TerrainTopology.BENT_PATH:
+        elif topology is TerrainTopology.BENT_PATH:
             cells = self._bent_cells(specification.rows, specification.columns, target)
-        elif topology == TerrainTopology.BRANCHING_TREE:
+        elif topology is TerrainTopology.BRANCHING_TREE:
             cells = self._tree_cells(specification.rows, specification.columns, target)
         else:
             cells = self._general_cells(specification.rows, specification.columns, target)
         if cells is None:
-            raise GenerationFailure("TerrainGenerator", "This specification cannot be built by the public family.")
-        return self.terrain_from_cells(cells, specification.rows, specification.columns)
+            raise GenerationFailure(
+                "TerrainGenerator", "This specification cannot be built by the public family."
+            )
+        return self._terrain_from_cells(specification.rows, specification.columns, cells)
 
     def _target_size(self, specification: TerrainGenerationSpec) -> int:
         capacity = specification.rows * specification.columns
@@ -40,7 +45,6 @@ class TerrainGenerator:
         return max(specification.min_open_tiles, target)
 
     def _straight_cells(self, rows: int, columns: int, target: int):
-        # One uninterrupted row or column gives a simple path on a single axis.
         if target > max(rows, columns):
             return None
         if columns >= target:
