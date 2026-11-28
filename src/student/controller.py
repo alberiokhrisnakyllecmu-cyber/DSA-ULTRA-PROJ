@@ -1,9 +1,3 @@
-"""AgentController chooses one legal action for each immutable snapshot.
-
-The controller searches for a short route to the exit. Static enemies are
-blockers that can be engaged; patrols move on a published schedule, so patrol
-worlds use a search that also tracks the current action count.
-"""
 from collections import deque
 from heapq import heappop, heappush
 
@@ -19,8 +13,6 @@ _MOVE_DELTAS = {kind: (dr, dc) for kind, dr, dc in _MOVES}
 
 
 class AgentController:
-    """A new controller is constructed for each run; arrival still needs EXIT."""
-
     def __init__(self) -> None:
         self._static_actions = []
         self._static_after = []
@@ -42,8 +34,6 @@ class AgentController:
             if action is not None:
                 return action
         return self._fallback_action(state)
-
-    # ----- shared helpers -------------------------------------------------
 
     def _cell(self, position):
         return (position.row, position.column)
@@ -74,8 +64,6 @@ class AgentController:
         return positions
 
     def _survives(self, schedules, cell, next_count, deadline, cap):
-        # A non-EXIT action advances the patrol clock and is followed by
-        # collision, deadline, and action-cap checks.
         if next_count >= cap:
             return False
         if deadline is not None and next_count >= deadline:
@@ -94,8 +82,6 @@ class AgentController:
             state = previous
         actions.reverse()
         return actions
-
-    # ----- static worlds --------------------------------------------------
 
     def _static_next(self, state):
         here = (state.agent_position.row, state.agent_position.column)
@@ -151,7 +137,6 @@ class AgentController:
         self._static_index = 0
 
     def _static_plan(self, state):
-        """Cheapest route plus any artifacts worth their extra turns."""
         start = self._cell(state.agent_position)
         goal = self._cell(state.exit_position)
         allowed = set(state.allowed_actions)
@@ -309,8 +294,6 @@ class AgentController:
                         queue.append(child)
         return []
 
-    # ----- patrol worlds --------------------------------------------------
-
     def _patrol_plan(self, state):
         start = self._cell(state.agent_position)
         goal = self._cell(state.exit_position)
@@ -375,8 +358,6 @@ class AgentController:
                         parents[child] = (node, WorldAction.wait())
                         queue.append(child)
         return []
-
-    # ----- safety net -----------------------------------------------------
 
     def _fallback_action(self, state):
         if state.agent_position == state.exit_position:
