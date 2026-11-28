@@ -52,7 +52,6 @@ class TerrainGenerator:
         return [(row, 0) for row in range(target)]
 
     def _bent_cells(self, rows: int, columns: int, target: int):
-        # A horizontal segment and a vertical segment share one corner.
         if rows < 2 or columns < 2 or target < 3:
             return None
         horizontal = min(columns, target - 1)
