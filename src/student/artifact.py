@@ -23,7 +23,6 @@ class Artifact:
 
     @property
     def position(self) -> Position:
-        # Return a copy to protect the original position.
         return Position(self._position.row, self._position.column)
 
     @property
